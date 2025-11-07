@@ -1,12 +1,5 @@
-d /Users/eveaimee/Documents/ITC/healthforce && cat > README.md <<'EOF'
-Healthforce
+# HealthForce
 
-Healthforce is a simple informational website built with Next.js. The site presents information about the Healthforce project, provides a page for people who want to join, and includes privacy details.
+**HealthForce** is a fine-tech medical platform designed to help physicians connect with trusted professionals who can assist them — whether through locum support, shared practices, or collaborative healthcare initiatives.
 
-This repository contains the frontend code (Next.js app) and static assets used to render the public site.
-
-Quick start:
-
-1. Install dependencies: `npm install`
-2. Run locally: `npm run dev`
-3. Open http://localhost:3000
+This repository hosts the source code for the HealthForce web platform.
