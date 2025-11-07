@@ -61,7 +61,7 @@
 }
 
 body {
-  background: var(--background);
+  background: #ffffff;
   color: var(--foreground);
   /* font-family is set via layout.tsx Open Sans className */
 }
