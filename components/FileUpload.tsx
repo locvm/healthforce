@@ -1,11 +1,18 @@
 "use client";
 
 import { useRef, useState } from "react";
+import ParsedDataDisplay from "./ParsedDataDisplay";
+import RedactedImageDisplay from "./RedactedImageDisplay";
 
 export default function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadResult, setUploadResult] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState<{
+    step: string;
+    percent: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (
@@ -19,27 +26,60 @@ export default function FileUpload() {
 
   const processFile = async (selectedFile: File) => {
     setFile(selectedFile);
+    setIsProcessing(true);
+    setProgress({ step: "Starting...", percent: 0 });
+
     const formData = new FormData();
     formData.append("file", selectedFile);
+
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
+
       if (!response.ok) {
-        throw new Error(
-          `Upload failed: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
       }
-      const result = await response.json();
-      console.log("Upload result:", result);
-      setUploadResult(result);
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let buffer = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop() || ''; // Keep incomplete line
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.result) {
+                  setUploadResult(data.result);
+                  setProgress(null);
+                } else {
+                  setProgress({ step: data.step, percent: data.percent });
+                }
+              } catch (e) {
+                console.error('Failed to parse progress:', e);
+              }
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error("Upload failed:", error);
       setUploadResult({
         error: "Upload failed",
         details: (error as Error).message,
       });
+      setProgress(null);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -109,53 +149,26 @@ export default function FileUpload() {
           </div>
         </div>
       )}
-      {uploadResult && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Parsed Resume Data</h3>
-          {uploadResult.parsedData ? (
-            <div className="space-y-2">
-              <p>
-                <strong>Name:</strong>{" "}
-                {uploadResult.parsedData.name || "Not found"}
-              </p>
-              <p>
-                <strong>Email:</strong>{" "}
-                {uploadResult.parsedData.email || "Not found"}
-              </p>
-              <p>
-                <strong>Phone:</strong>{" "}
-                {uploadResult.parsedData.phone || "Not found"}
-              </p>
-              <p>
-                <strong>Socials:</strong>{" "}
-                {uploadResult.parsedData.socials?.length
-                  ? uploadResult.parsedData.socials.join(", ")
-                  : "Not found"}
-              </p>
-              <p>
-                <strong>Address:</strong>{" "}
-                {uploadResult.parsedData.address || "Not found"}
-              </p>
-              <p>
-                <strong>Skills:</strong>{" "}
-                {uploadResult.parsedData.skills?.join(", ") || "Not found"}
-              </p>
-              <p>
-                <strong>Education:</strong>{" "}
-                {uploadResult.parsedData.education?.join("; ") || "Not found"}
-              </p>
-              <p>
-                <strong>Experience:</strong>{" "}
-                {uploadResult.parsedData.experience?.join("; ") || "Not found"}
-              </p>
-            </div>
-          ) : (
-            <p className="text-red-600">
-              {uploadResult.error || "No data parsed"}
-            </p>
-          )}
+      {isProcessing && progress && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center mb-2">
+            <span className="material-icons text-blue-600 mr-2 animate-spin">
+              refresh
+            </span>
+            <p className="text-sm text-blue-800">{progress.step}</p>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress.percent}%` }}></div>
+          </div>
+          <p className="text-xs text-blue-600 mt-1">
+            {progress.percent}% complete
+          </p>
         </div>
       )}
+      <ParsedDataDisplay uploadResult={uploadResult} />
+      <RedactedImageDisplay uploadResult={uploadResult} />
     </div>
   );
 }
