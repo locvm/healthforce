@@ -45,7 +45,7 @@ export default function Home() {
       <div className="relative z-10">
         {/* Hero Section */}
         <section
-          className="hero-section bg-white relative flex items-center justify-center overflow-hidden"
+          className="hero-section relative flex items-center justify-center overflow-hidden"
           style={{ padding: "3.5rem 1rem" }}>
           <div className="relative z-10 max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8">
             {/* Text Side */}
@@ -102,7 +102,7 @@ export default function Home() {
           </div>
         </section>
         {/* Doctor Stories Section */}
-        <section id="stories" className="section-stories bg-white">
+        <section id="stories" className="section-stories">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="h2-stories">Doctor Stories</h2>
@@ -121,7 +121,7 @@ export default function Home() {
                     loading="lazy"
                   />
                   <blockquote className="text-body italic mb-6 text-lg leading-relaxed">
-                    "{doc.quote}"
+                    &quot;{doc.quote}&quot;
                   </blockquote>
                   <div className="icon-primary font-bold text-base">
                     {doc.name}
@@ -132,7 +132,7 @@ export default function Home() {
           </div>
         </section>
         {/* About / Mission Section */}
-        <section id="about" className="section-mission bg-white">
+        <section id="about" className="section-mission">
           <div className="max-w-4xl lg:max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="section-title">Our Mission</h2>
@@ -198,7 +198,7 @@ export default function Home() {
         </section>{" "}
         {/* Our Goals Section */}
         {/* Call to Action Section */}
-        <section className="section-cta bg-white py-12">
+        <section className="section-cta py-12">
           <div className="max-w-3xl mx-auto text-center px-4 cta-panel">
             <h2 className="text-2xl md:text-3xl font-extrabold mb-3 text-gray-900">
               Ready to Join HealthFront?
